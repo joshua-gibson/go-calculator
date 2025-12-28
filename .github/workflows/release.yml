@@ -20,14 +20,23 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-      - name: Build for Windows
+      - name: Build CLI for Windows
         run: GOOS=windows GOARCH=amd64 go build -o build/calc-windows.exe ./cmd/calc
 
-      - name: Build for Linux
+      - name: Build CLI for Linux
         run: GOOS=linux GOARCH=amd64 go build -o build/calc-linux ./cmd/calc
 
-      - name: Build for macOS
+      - name: Build CLI for macOS
         run: GOOS=darwin GOARCH=amd64 go build -o build/calc-macos ./cmd/calc
+
+      - name: Build GUI for Windows
+        run: GOOS=windows GOARCH=amd64 go build -o build/gcalc-windows.exe ./cmd/gcalc
+
+      - name: Build GUI for Linux
+        run: GOOS=linux GOARCH=amd64 go build -o build/gcalc-linux ./cmd/gcalc
+
+      - name: Build GUI for macOS
+        run: GOOS=darwin GOARCH=amd64 go build -o build/gcalc-macos ./cmd/gcalc
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -36,5 +45,8 @@ jobs:
             build/calc-windows.exe
             build/calc-linux
             build/calc-macos
+            build/gcalc-windows.exe
+            build/gcalc-linux
+            build/gcalc-macos
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
