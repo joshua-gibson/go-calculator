@@ -7,7 +7,10 @@ on:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -17,42 +20,35 @@ jobs:
         with:
           go-version: '1.22'
 
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev mingw-w64
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev
 
       - name: Run tests
+        if: runner.os == 'Linux' # Run tests on only one platform
         run: go test ./pkg/calculator/...
 
-      - name: Build CLI for Windows
-        run: GOOS=windows GOARCH=amd64 go build -o build/calc-windows.exe ./cmd/calc
+      - name: Build binaries (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p build
+          go build -o build/calc-${{ runner.os }} ./cmd/calc
+          go build -o build/gcalc-${{ runner.os }} ./cmd/gcalc
+        shell: bash
 
-      - name: Build CLI for Linux
-        run: GOOS=linux GOARCH=amd64 go build -o build/calc-linux ./cmd/calc
-
-      - name: Build CLI for macOS
-        run: GOOS=darwin GOARCH=amd64 go build -o build/calc-macos ./cmd/calc
-
-      - name: Build GUI for Windows
-        env:
-          CGO_ENABLED: "1"
-          CC: x86_64-w64-mingw32-gcc
-        run: GOOS=windows GOARCH=amd64 go build -o build/gcalc-windows.exe ./cmd/gcalc
-
-      - name: Build GUI for Linux
-        run: GOOS=linux GOARCH=amd64 go build -o build/gcalc-linux ./cmd/gcalc
-
-      - name: Build GUI for macOS
-        run: GOOS=darwin GOARCH=amd64 go build -o build/gcalc-macos ./cmd/gcalc
+      - name: Build binaries (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir -p build
+          go build -o build/calc-${{ runner.os }}.exe ./cmd/calc
+          go build -o build/gcalc-${{ runner.os }}.exe ./cmd/gcalc
+        shell: bash
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build/calc-windows.exe
-            build/calc-linux
-            build/calc-macos
-            build/gcalc-windows.exe
-            build/gcalc-linux
-            build/gcalc-macos
+            build/calc-${{ runner.os }}*
+            build/gcalc-${{ runner.os }}*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
