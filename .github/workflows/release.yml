@@ -18,10 +18,10 @@ jobs:
           go-version: '1.22'
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev xvfb
 
       - name: Run tests
-        run: go test ./...
+        run: xvfb-run go test ./...
 
       - name: Build CLI for Windows
         run: GOOS=windows GOARCH=amd64 go build -o build/calc-windows.exe ./cmd/calc
