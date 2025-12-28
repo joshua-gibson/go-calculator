@@ -33,24 +33,24 @@ jobs:
       - name: Build binaries (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
+          OS_NAME=$(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
           mkdir -p build
-          go build -o build/calc-${{ runner.os }} ./cmd/calc
-          go build -o build/gcalc-${{ runner.os }} ./cmd/gcalc
+          go build -o build/calc-${OS_NAME}-amd64 ./cmd/calc
+          go build -o build/gcalc-${OS_NAME}-amd64 ./cmd/gcalc
         shell: bash
 
       - name: Build binaries (Windows)
         if: runner.os == 'Windows'
         run: |
+          OS_NAME=$(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
           mkdir -p build
-          go build -o build/calc-${{ runner.os }}.exe ./cmd/calc
-          go build -o build/gcalc-${{ runner.os }}.exe ./cmd/gcalc
+          go build -o build/calc-${OS_NAME}-amd64.exe ./cmd/calc
+          go build -o build/gcalc-${OS_NAME}-amd64.exe ./cmd/gcalc
         shell: bash
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            build/calc-${{ runner.os }}*
-            build/gcalc-${{ runner.os }}*
+          files: build/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
