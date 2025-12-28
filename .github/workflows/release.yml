@@ -34,6 +34,7 @@ jobs:
 
       - name: Build GUI for Windows
         env:
+          CGO_ENABLED: "1"
           CC: x86_64-w64-mingw32-gcc
         run: GOOS=windows GOARCH=amd64 go build -o build/gcalc-windows.exe ./cmd/gcalc
 
